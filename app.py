@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 # # it opens our .env file and loads all the secret keys into our program
 import requests
+# Flask backend needs to talk to an external AI API (OpenRouter / Gemini / OpenAI).
 from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -32,7 +33,7 @@ mysql = MySQL(app)
 
 # Login Required Decorator
 def login_required(f):
-    @wraps(f)
+    @wraps(f)               # It preserves the original function's name and metadata.
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login'))
@@ -70,7 +71,10 @@ def register():
         try:
             cursor = mysql.connection.cursor()
 
-            cursor.execute("SELECT id FROM users WHERE email=%s", (email,))
+            cursor.execute("SELECT id FROM users WHERE email=%s", (email,))  
+            
+            # Because execute() expects the query parameters as a tuple, list, or dictionary. A string is treated as individual characters, while (email,) is a single-element tuple that correctly represents one SQL parameter and allows safe parameter binding.
+
             existing_user = cursor.fetchone()
 
             if existing_user:
